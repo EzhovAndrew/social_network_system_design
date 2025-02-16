@@ -1,0 +1,693 @@
+openapi: 3.0.3
+
+info:
+  title: Social Network V1 API
+  description: This is the api for the social network, homework №2
+  contact:
+    email: ezhovandr@gmail.com
+  version: 1.0.0
+
+servers:
+  - url: https://system-design.social.com/api/v1
+
+tags:
+  - name: post
+  - name: feed
+  - name: comments
+  - name: subscription
+  - name: photos
+  - name: locations
+paths:
+  /post:
+    post:
+      tags:
+        - post
+      summary: Create new post
+      description: Create new post in current user account
+      operationId: createPost
+      requestBody:
+        description: Post data with images id's
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostPayload'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '422':
+          description: Validation error on input data
+          
+  /post/{postId}:
+    put:
+      tags:
+        - post
+      summary: Update post
+      description: Update an existent post in the current user account
+      operationId: updatePost
+      parameters:
+        - name: postId
+          in: path
+          description: Post Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostPayload'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post with id is not found
+        '422':
+          description: Validation error on input data
+  
+    get:
+      tags:
+        - post
+      summary: Get post
+      description: Get post by it's id
+      operationId: getPost
+      parameters:
+        - name: postId
+          in: path
+          description: Post Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post with specified id does not exist
+
+    delete:
+      tags:
+        - post
+      summary: Delete post from current user account
+      operationId: deletePost
+      parameters:
+        - name: postId
+          in: path
+          description: Post Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: Post with specified id does not exist
+          
+  /post/{postId}/like:
+    post:
+      tags:
+        - post
+      summary: Set like
+      description: Set like for post in current user account
+      operationId: setLike
+      parameters:
+        - name: postId
+          in: path
+          description: Post Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  format: int64
+      responses:
+        '200':
+          description: successful operation
+
+  /post/{postId}/unlike:
+    post:
+      tags:
+        - post
+      summary: Delete like from post in current user account
+      operationId: deleteLike
+      parameters:
+        - name: postId
+          in: path
+          description: Post Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  format: int64
+      responses:
+        '200':
+          description: successful operation
+          
+  /comment:
+    post:
+      tags:
+        - comments
+      summary: add comment on post
+      operationId: addComment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentPayload'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+  
+  /comment/{commentId}:
+    put:
+      tags:
+        - comments
+      summary: update comment
+      operationId: updateComment
+      parameters:
+        - name: commentId
+          in: path
+          description: Comment Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+    
+    delete:
+      tags:
+        - comments
+      summary: delete comment
+      operationId: deleteComment
+      parameters:
+        - name: commentId
+          in: path
+          description: Comment Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+    
+  /comments/{postId}:
+    get:
+      tags:
+        - comments
+      summary: Returns comments for post
+      description: Comments are paginated with limit-offset pagination
+      operationId: getCommentsForPost
+      parameters:
+        - name: postId
+          in: path
+          description: Post Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: limit
+          in: query
+          description: number of comments to return
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: offset
+          in: query
+          description: number of comments to skip from start
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedComments'
+  
+  /subscribe:
+    post:
+      tags:
+        - subscription
+      summary: Subscribe to another user
+      operationId: subscribe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                followerId:
+                  type: integer
+                  format: int64
+                  example: 123
+                followingId:
+                  type: integer
+                  format: int64
+                  example: 321
+      responses:
+        '200':
+          description: successful operation
+        '403':
+          description: User was blocked by another user and can not subscribe to it
+
+  /unsubscribe:
+    post:
+      tags:
+        - subscription
+      summary: Unsubscribe from another user
+      operationId: unsubscribe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                followerId:
+                  type: integer
+                  format: int64
+                  example: 123
+                followingId:
+                  type: integer
+                  format: int64
+                  example: 321
+      responses:
+        '200':
+          description: successful operation
+
+  /feed:
+    get:
+      tags:
+        - feed
+      summary: Get posts from my feed
+      description: Posts are paginated with limit-offset pagination and returned in reverse chronological order.
+      operationId: getFeed
+      parameters:
+        - name: limit
+          in: query
+          description: number of posts to return
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: offset
+          in: query
+          description: number of posts to skip from start
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+        - name: timestamp
+          in: query
+          description: use this as time checkpoint if you want to avoid pagination anomalies referred to new inserted posts.
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPosts'
+
+  /feed/user/{userId}:
+    get:
+      tags:
+        - feed
+      summary: Get posts to feed from user.
+      description: Posts are paginated with limit-offset pagination and returned in reverse chronological order.
+      operationId: getFeedByUserId
+      parameters:
+        - name: userId
+          in: path
+          description: Id of the user whose feed we want to view
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: limit
+          in: query
+          description: number of posts to return
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: offset
+          in: query
+          description: number of posts to skip from start
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+        - name: timestamp
+          in: query
+          description: use this as time checkpoint if you want to avoid pagination anomalies referred to new inserted posts.
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPosts'
+        '404':
+          description: User with specified id was not found
+
+  /feed/location/{locationId}:
+    get:
+      tags:
+        - feed
+      summary: Get posts for location
+      description: Posts are paginated with limit-offset pagination and returned in reverse chronological order.
+      operationId: getFeedByLocationId
+      parameters:
+        - name: locationId
+          in: path
+          description: Id of the location we want to view posts for
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: limit
+          in: query
+          description: number of posts to return
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: offset
+          in: query
+          description: number of posts to skip from start
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+        - name: timestamp
+          in: query
+          description: use this as time checkpoint if you want to avoid pagination anomalies referred to new inserted posts.
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPosts'
+        '404':
+          description: location with specified id was not found
+  
+  /photo/upload:
+    post:
+      tags:
+        - photos
+      summary: upload photo
+      operationId: uploadPhoto
+      requestBody:
+        content:
+          application/octeat-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photoId:
+                    type: integer
+                    format: int64
+                    example: 145988
+     
+  /locations:
+    get:
+      tags:
+        - locations
+      summary: Returns locations filtered by query
+      description: locations are returned sorted by popularity in reverse order
+      operationId: getLocationsByQuery
+      parameters:
+        - name: query
+          in: query
+          description: search string
+          required: true
+          schema:
+            type: string
+            maxLength: 200
+        - name: limit
+          in: query
+          description: number of comments to return
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: offset
+          in: query
+          description: number of comments to skip from start
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLocations'
+
+  /locations/geo:
+    get:
+      tags:
+        - locations
+      summary: Returns locations around geo position
+      description: locations are returned sorted by popularity in reverse order.
+      operationId: getLocationsByGeoPos
+      parameters:
+        - name: longitude
+          in: query
+          description: longitude - coordinate of location
+          required: true
+          schema:
+            type: number
+        - name: latitude
+          in: query
+          description: latitude - coordinate of location
+          required: true
+          schema:
+            type: number
+        - name: limit
+          in: query
+          description: number of comments to return
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: offset
+          in: query
+          description: number of comments to skip from start
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLocations'
+
+components:
+  schemas:
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+          example: 240
+        offset:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 10
+        limit:
+          type: integer
+          format: int64
+          minimum: 0
+          example: 20
+          default: 20
+  
+    PostPayload:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          example: 198772
+        locationId:
+          type: integer
+          format: int64
+          example: 7
+        description:
+          type: string
+        photosIds:
+          type: array
+          description: id of the photos attached to the post
+          example: [1, 2, 3]
+          items:
+            type: integer
+            format: int64
+  
+    Post:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 10
+        - $ref: '#/components/schemas/PostPayload'
+        
+    PaginatedPosts:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            posts:
+              type: array
+              items: 
+                $ref: '#/components/schemas/Post'
+    
+    CommentPayload:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          example: 198772
+        postId:
+          type: integer
+          format: int64
+          example: 7
+        text:
+          type: string
+  
+    Comment:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 10
+        - $ref: '#/components/schemas/CommentPayload'
+        
+    PaginatedComments:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            comments:
+              type: array
+              items: 
+                $ref: '#/components/schemas/Comment'
+                
+    Location:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+          example: 7
+        name:
+          type: string
+          maxLength: 100
+        latitude:
+          type: number
+        longitude:
+          type: number
+    
+    PaginatedLocations:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            locations:
+              type: array
+              items: 
+                $ref: '#/components/schemas/Location'
