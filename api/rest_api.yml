@@ -11,17 +11,18 @@ servers:
   - url: https://system-design.social.com/api/v1
 
 tags:
-  - name: post
-  - name: feed
+  - name: posts
+  - name: reactions
   - name: comments
+  - name: feed
   - name: subscription
   - name: photos
   - name: locations
 paths:
-  /post:
+  /posts:
     post:
       tags:
-        - post
+        - posts
       summary: Create new post
       description: Create new post in current user account
       operationId: createPost
@@ -41,11 +42,13 @@ paths:
                 $ref: '#/components/schemas/Post'
         '422':
           description: Validation error on input data
+        '500':
+          description: Internal server error
           
-  /post/{postId}:
+  /posts/{postId}:
     put:
       tags:
-        - post
+        - posts
       summary: Update post
       description: Update an existent post in the current user account
       operationId: updatePost
@@ -74,10 +77,12 @@ paths:
           description: Post with id is not found
         '422':
           description: Validation error on input data
+        '500':
+          description: Internal server error
   
     get:
       tags:
-        - post
+        - posts
       summary: Get post
       description: Get post by it's id
       operationId: getPost
@@ -98,10 +103,12 @@ paths:
                 $ref: '#/components/schemas/Post'
         '404':
           description: Post with specified id does not exist
+        '500':
+          description: Internal server error
 
     delete:
       tags:
-        - post
+        - posts
       summary: Delete post from current user account
       operationId: deletePost
       parameters:
@@ -117,49 +124,46 @@ paths:
           description: successful operation
         '404':
           description: Post with specified id does not exist
+        '500':
+          description: Internal server error
           
-  /post/{postId}/like:
-    post:
+  /reactions:
+    get:
       tags:
-        - post
-      summary: Set like
-      description: Set like for post in current user account
-      operationId: setLike
+        - reactions
+      summary: Get reactions number for post
+      operationId: getPostReactions
       parameters:
         - name: postId
-          in: path
+          in: query
           description: Post Id
           required: true
           schema:
             type: integer
             format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                  format: int64
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reactions:
+                    type: integer
+                    format: int64
+                    example: 123456
+        '404':
+          description: Post with specified id does not exist
+        '500':
+          description: Internal server error
 
-  /post/{postId}/unlike:
     post:
       tags:
-        - post
-      summary: Delete like from post in current user account
-      operationId: deleteLike
-      parameters:
-        - name: postId
-          in: path
-          description: Post Id
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - reactions
+      summary: Set/Unset like
+      description: Set/Unset like for post in current user account
+      operationId: setReaction
       requestBody:
         content:
           application/json:
@@ -169,11 +173,69 @@ paths:
                 userId:
                   type: integer
                   format: int64
+                  example: 153867
+                postId:
+                  type: integer
+                  format: int64
+                  example: 124324
+                set:
+                  type: boolean
       responses:
         '200':
           description: successful operation
+        '404':
+          description: Post with specified id does not exist
+        '500':
+          description: Internal server error
           
-  /comment:
+  /comments:
+    get:
+      tags:
+        - comments
+      summary: Returns comments for post
+      description: Comments are paginated with limit-offset pagination
+      operationId: getCommentsForPost
+      parameters:
+        - name: postId
+          in: query
+          description: Post Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: limit
+          in: query
+          description: number of comments to return
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: offset
+          in: query
+          description: number of comments to skip from start
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+        - name: timestamp
+          in: query
+          description: use this as time checkpoint if you want to avoid pagination anomalies referred to new inserted comments.
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedComments'
+        '500':
+          description: Internal server error
+
     post:
       tags:
         - comments
@@ -191,8 +253,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
+        '500':
+          description: Internal server error
   
-  /comment/{commentId}:
+  /comments/{commentId}:
     put:
       tags:
         - comments
@@ -221,6 +285,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
+        '500':
+          description: Internal server error
     
     delete:
       tags:
@@ -238,45 +304,8 @@ paths:
       responses:
         '200':
           description: successful operation
-    
-  /comments/{postId}:
-    get:
-      tags:
-        - comments
-      summary: Returns comments for post
-      description: Comments are paginated with limit-offset pagination
-      operationId: getCommentsForPost
-      parameters:
-        - name: postId
-          in: path
-          description: Post Id
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: limit
-          in: query
-          description: number of comments to return
-          required: false
-          schema:
-            type: integer
-            format: int64
-            default: 20
-        - name: offset
-          in: query
-          description: number of comments to skip from start
-          required: false
-          schema:
-            type: integer
-            format: int64
-            default: 0
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedComments'
+        '500':
+          description: Internal server error
   
   /subscribe:
     post:
@@ -303,6 +332,8 @@ paths:
           description: successful operation
         '403':
           description: User was blocked by another user and can not subscribe to it
+        '500':
+          description: Internal server error
 
   /unsubscribe:
     post:
@@ -327,12 +358,14 @@ paths:
       responses:
         '200':
           description: successful operation
+        '500':
+          description: Internal server error
 
   /feed:
     get:
       tags:
         - feed
-      summary: Get posts from my feed
+      summary: Get feed
       description: Posts are paginated with limit-offset pagination and returned in reverse chronological order.
       operationId: getFeed
       parameters:
@@ -359,96 +392,16 @@ paths:
           schema:
             type: integer
             format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedPosts'
-
-  /feed/user/{userId}:
-    get:
-      tags:
-        - feed
-      summary: Get posts to feed from user.
-      description: Posts are paginated with limit-offset pagination and returned in reverse chronological order.
-      operationId: getFeedByUserId
-      parameters:
         - name: userId
-          in: path
-          description: Id of the user whose feed we want to view
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: limit
           in: query
-          description: number of posts to return
+          description: use it if you want to see feed for a specific user
           required: false
           schema:
             type: integer
             format: int64
-            default: 20
-        - name: offset
-          in: query
-          description: number of posts to skip from start
-          required: false
-          schema:
-            type: integer
-            format: int64
-            default: 0
-        - name: timestamp
-          in: query
-          description: use this as time checkpoint if you want to avoid pagination anomalies referred to new inserted posts.
-          required: false
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedPosts'
-        '404':
-          description: User with specified id was not found
-
-  /feed/location/{locationId}:
-    get:
-      tags:
-        - feed
-      summary: Get posts for location
-      description: Posts are paginated with limit-offset pagination and returned in reverse chronological order.
-      operationId: getFeedByLocationId
-      parameters:
         - name: locationId
-          in: path
-          description: Id of the location we want to view posts for
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: limit
           in: query
-          description: number of posts to return
-          required: false
-          schema:
-            type: integer
-            format: int64
-            default: 20
-        - name: offset
-          in: query
-          description: number of posts to skip from start
-          required: false
-          schema:
-            type: integer
-            format: int64
-            default: 0
-        - name: timestamp
-          in: query
-          description: use this as time checkpoint if you want to avoid pagination anomalies referred to new inserted posts.
+          description: use it if you want to see feed for a specific location
           required: false
           schema:
             type: integer
@@ -460,8 +413,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedPosts'
+        '400':
+          description: parameters are conflicting(both userId and locationId are sent)
         '404':
-          description: location with specified id was not found
+          description: location or user with specified id was not found
+        '500':
+          description: Internal server error
   
   /photo/upload:
     post:
@@ -487,64 +444,34 @@ paths:
                     type: integer
                     format: int64
                     example: 145988
+        '500':
+          description: Internal server error
      
   /locations:
     get:
       tags:
         - locations
-      summary: Returns locations filtered by query
+      summary: Returns locations filtered by query or coordinates
       description: locations are returned sorted by popularity in reverse order
       operationId: getLocationsByQuery
       parameters:
         - name: query
           in: query
           description: search string
-          required: true
+          required: false
           schema:
             type: string
             maxLength: 200
-        - name: limit
-          in: query
-          description: number of comments to return
-          required: false
-          schema:
-            type: integer
-            format: int64
-            default: 20
-        - name: offset
-          in: query
-          description: number of comments to skip from start
-          required: false
-          schema:
-            type: integer
-            format: int64
-            default: 0
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedLocations'
-
-  /locations/geo:
-    get:
-      tags:
-        - locations
-      summary: Returns locations around geo position
-      description: locations are returned sorted by popularity in reverse order.
-      operationId: getLocationsByGeoPos
-      parameters:
         - name: longitude
           in: query
           description: longitude - coordinate of location
-          required: true
+          required: false
           schema:
             type: number
         - name: latitude
           in: query
           description: latitude - coordinate of location
-          required: true
+          required: false
           schema:
             type: number
         - name: limit
@@ -570,6 +497,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedLocations'
+        '500':
+          description: Internal server error
 
 components:
   schemas:
