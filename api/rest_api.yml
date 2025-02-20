@@ -307,7 +307,7 @@ paths:
         '500':
           description: Internal server error
   
-  /subscribe:
+  /subscriptions:
     post:
       tags:
         - subscription
@@ -327,37 +327,13 @@ paths:
                   type: integer
                   format: int64
                   example: 321
+                set:
+                  type: boolean
       responses:
         '200':
           description: successful operation
         '403':
           description: User was blocked by another user and can not subscribe to it
-        '500':
-          description: Internal server error
-
-  /unsubscribe:
-    post:
-      tags:
-        - subscription
-      summary: Unsubscribe from another user
-      operationId: unsubscribe
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                followerId:
-                  type: integer
-                  format: int64
-                  example: 123
-                followingId:
-                  type: integer
-                  format: int64
-                  example: 321
-      responses:
-        '200':
-          description: successful operation
         '500':
           description: Internal server error
 
