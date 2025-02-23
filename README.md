@@ -72,22 +72,64 @@
 
 Пагинация ленты - 20 постов на странице
 ```
-RPS(в обычное время) - 10 000 000 * 6 / 86400 = 694 RPS
-RPS(в обычное время) - 10 000 000 * 1 / 7 / 86400 = 17 RPS
+RPS(чтение в обычное время) - 10 000 000 * 6 / 86400 = 694 RPS
+RPS(запись в обычное время) - 10 000 000 * 1 / 7 / 86400 = 17 RPS
 ```
 ```
-Traffic(в обычное время) - 694 RPS * 10Kb * 20 = 137 Mb/s
-Traffic(в обычное время) - 17 RPS * 10Kb * 20 = 3.36 Mb/s
+Traffic(чтение в обычное время) - 694 RPS * 10Kb * 20 = 137 Mb/s
+Traffic(запись в обычное время) - 17 RPS * 10Kb * 20 = 3.36 Mb/s
+```
+```
+Capacity = 3.36 Mb/s * 86400 * 365 = 0.1 Pb
+
+HDD
+Disks_for_capacity = ceil(100Tb / 32 Tb) = 4
+Disks_for_throughput = ceil(140 Mb/s / 100 Mb/s) = 2
+Disks_for_iops = ceil(750 IOPS / 100 IOPS) = 8
+Disks = max(4, 2, 8) = 8
+
+SSD(SATA)
+Disks_for_capacity = ceil(100Tb / 100 Tb) = 1
+Disks_for_throughput = ceil(140Mb/s / 500 Mb/s) = 1
+Disks_for_iops = ceil(750 IOPS / 1000 IOPS) = 1
+Disks = max(1, 1, 1) = 1
+
+SSD(nVME)
+Disks_for_capacity = ceil(100 Tb / 30Tb) = 4
+Disks_for_throughput = ceil(140 Mb/s / 3 Gb/s) = 1
+Disks_for_iops = ceil(750 IOPS / 10000 IOPS) = 1
+Disks = max(4, 1, 1) = 4
 ```
 
 ### Лайки
 ```
-RPS(в обычное время) = RPS(выдача постов в ленту в обычное время) = 694 RPS
-RPS(в обычное время) = 10 000 000 * 40 / 86400 = 4630 RPS
+RPS(чтение в обычное время) = RPS(выдача постов в ленту в обычное время) = 694 RPS
+RPS(запись в обычное время) = 10 000 000 * 40 / 86400 = 4630 RPS
 ```
 ```
-Traffic(в обычное время) = 694 RPS * 16b = 10.84 Kb/s
-Traffic(в обычное время) = 4630 RPS * 16b = 72.34 Kb/s
+Traffic(чтение в обычное время) = 694 RPS * 16b = 10.84 Kb/s
+Traffic(запись в обычное время) = 4630 RPS * 16b = 72.34 Kb/s
+```
+```
+Capacity = 72.34 Kb/s * 86400 * 365 = 2 Tb
+
+HDD
+Disks_for_capacity = ceil(2 Tb / 32 Tb) = 1
+Disks_for_throughput = ceil(84 Kb/s / 100 Mb/s) = 1
+Disks_for_iops = ceil(5500 IOPS / 100 IOPS) = 55
+Disks = max(1, 1, 55) = 55
+
+SSD(SATA)
+Disks_for_capacity = ceil(2 Tb / 100 Tb) = 1
+Disks_for_throughput = ceil(84 Kb/s / 500 Mb/s) = 1
+Disks_for_iops = ceil(5500 IOPS / 1000 IOPS) = 6
+Disks = max(1, 1, 6) = 6
+
+SSD(nVME)
+Disks_for_capacity = ceil(2 Tb / 30Tb) = 1
+Disks_for_throughput = ceil(84 Kb/s / 3 Gb/s) = 1
+Disks_for_iops = ceil(5500 IOPS / 10000 IOPS) = 1
+Disks = max(1, 1, 1) = 1
 ```
 
 ### Комментарии
@@ -102,13 +144,55 @@ RPS(в обычное время) = 10 000 000 * 10 / 86400 = 1157 RPS
 Traffic(в обычное время) = 694 RPS * 1Kb * 20 = 14 Mb/s
 Traffic(в обычное время) = 1157 RPS * 1Kb * 20 = 23 Mb/s
 ```
+```
+Capacity = 23 Mb/s * 86400s * 365 = 0.7 Pb
+
+HDD
+Disks_for_capacity = ceil(800 Tb / 32 Tb) = 25
+Disks_for_throughput = ceil(40 Mb/s / 100 Mb/s) = 1
+Disks_for_iops = ceil(2000 IOPS / 100 IOPS) = 20
+Disks = max(25, 1, 20) = 25
+
+SSD(SATA)
+Disks_for_capacity = ceil(800 Tb / 100 Tb) = 8
+Disks_for_throughput = ceil(40 Mb/s / 500 Mb/s) = 1
+Disks_for_iops = ceil(2000 IOPS / 1000 IOPS) = 2
+Disks = max(8, 1, 2) = 8
+
+SSD(nVME)
+Disks_for_capacity = ceil(800 Tb / 30Tb) = 22
+Disks_for_throughput = ceil(40 Mb/s / 3 Gb/s) = 1
+Disks_for_iops = ceil(2000 IOPS / 10000 IOPS) = 1
+Disks = max(22, 1, 1) = 22
+```
 
 ### Фотографии
 ```
-RPS(в обычное время) = RPS(выдача постов в ленту в обычное время) * 3 = 694 RPS * 3 = 2082 RPS
-RPS(в обычное время) = RPS(публикация постов в обычное время) * 3 = 17 RPS * 3 = 51 RPS
+RPS(чтение в обычное время) = RPS(выдача постов в ленту в обычное время) * 3 = 694 RPS * 3 = 2082 RPS
+RPS(запись в обычное время) = RPS(публикация постов в обычное время) * 3 = 17 RPS * 3 = 51 RPS
 ```
 ```
-Traffic(в обычное время) = 2082 RPS * 1Mb = 2 Gb/s
-Traffic(в обычное время) = 51 RPS * 1Mb = 20 Mb/s
+Traffic(чтение в обычное время) = 2082 RPS * 1Mb = 2 Gb/s
+Traffic(запись в обычное время) = 51 RPS * 1Mb = 51 Mb/s
+```
+```
+Capacity = 51 Mb/s * 86400s * 365 = 1.5Pb
+
+HDD
+Disks_for_capacity = ceil(1.5Pb / 32 Tb) = 48
+Disks_for_throughput = ceil(2.01 Gb/s / 100 Mb/s) = 21
+Disks_for_iops = ceil(2200 IOPS / 100 IOPS) = 22
+Disks = max(48, 21, 22) = 48
+
+SSD(SATA)
+Disks_for_capacity = ceil(1.5Pb / 100 Tb) = 16
+Disks_for_throughput = ceil(2.01 Gb/s / 500 Mb/s) = 5
+Disks_for_iops = ceil(2200 IOPS / 1000 IOPS) = 3
+Disks = max(16, 5, 3) = 16
+
+SSD(nVME)
+Disks_for_capacity = ceil(1.5Pb / 30Tb) = 52
+Disks_for_throughput = ceil(2.01 Gb/s / 3 Gb/s) = 1
+Disks_for_iops = ceil(2200 IOPS / 10000 IOPS) = 1
+Disks = max(52, 1, 1) = 52
 ```
